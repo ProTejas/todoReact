@@ -30,6 +30,12 @@ h1 {
     margin-right: 25px;
 }
 
+.todo-list-item .svg-icons{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .todo-input-items label {
     font-weight: bold;
     margin-bottom: 10px;
@@ -39,6 +45,7 @@ h1 {
     padding: 8px;
     border: none;
     width: 250px;
+    color: black;
 }
 
 .todo-input-items input:focus {
@@ -80,7 +87,8 @@ h1 {
 
 .btn-area {
     margin-bottom: 15px;
-}
+} 
+
 
 .todo-list-item {
     background-color: #414040;

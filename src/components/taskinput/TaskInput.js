@@ -66,7 +66,7 @@ export default function TaskInput() {
                                         {item.description}
                                     </p>
                                 </div>
-                                <div>
+                                <div className='svg-icons'>
                                     <BsCheckLg className='check-icon' onClick={(e) => {
                                         item.isComplete = true;
                                         e.currentTarget.closest('.todo-list-item').remove();
