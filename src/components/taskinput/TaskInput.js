@@ -46,7 +46,6 @@ export default function TaskInput() {
                 );
                 console.log(newTodo);
 
-
                 setNewTitle('');
                 setNewDescription('');
 
