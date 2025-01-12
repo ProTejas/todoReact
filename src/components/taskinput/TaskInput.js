@@ -1,45 +1,114 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import './mainInput.css'
 import { AiOutlineDelete } from 'react-icons/ai';
 import { BsCheckLg } from 'react-icons/bs';
+import { useNavigate } from 'react-router-dom';
+import { account, databases } from '../apiFolder/api';
+import { Query } from 'appwrite';
 
 export default function TaskInput() {
 
+    const [email, setEmail] = useState('');
+    const [name, setName] = useState('');
+    const navigate = useNavigate();
     const [isCompletrScreen, setCompleteScreen] = useState(false);
     const [allTodos, setTodos] = useState([]);
     const [newTitle, setNewTitle] = useState("");
     const [newDescription, setNewDescription] = useState("");
 
+    useEffect(() => {
+        isLogined().then(() => {
+            viewTodos();
+        });
+    }, []);
 
-    const handlrAddToDo = () => {
-        let newToDoItems = {
-            title: newTitle,
-            description: newDescription,
-            isComplete: false
+    const handlrAddToDo = async () => {
+
+
+        if (newTitle === '') {
+            alert('Please enter a todo');
+        } else {
+            try {
+                let newToDoItems = {
+                    title: newTitle,
+                    description: newDescription,
+                    isComplete: false
+                }
+
+                let updateToArr = [...allTodos];
+                updateToArr.push(newToDoItems);
+
+                let newTodo = await databases.createDocument(
+                    process.env.REACT_APP_DB_ID,
+                    process.env.REACT_APP_COLLECTION_ID,
+                    'unique()',
+                    { email: email, title: newToDoItems.title, descriptipon: newToDoItems.description }
+                );
+                console.log(newTodo);
+
+
+                setNewTitle('');
+                setNewDescription('');
+
+                viewTodos(); // Refresh the todo list
+            } catch (error) {
+                console.error('Failed to add todo:', error);
+            }
         }
-
-        let updateToArr = [...allTodos];
-        updateToArr.push(newToDoItems);
-        setTodos(updateToArr);
-
-        setNewTitle('');
-        setNewDescription('');
     }
+
+    const isLogined = async () => {
+        try {
+            let logInDetails = await account.get();
+            setEmail(logInDetails.email);
+            setName(logInDetails.name);
+            viewTodos();
+        } catch (error) {
+            navigate('/log-in');
+        }
+    };
+    const handleLogOut = async () => {
+        try {
+            await account.deleteSession('current');
+            navigate('/log-in');
+        } catch (error) {
+            console.error('Failed to log out:', error);
+        }
+    };
 
     const completedTask = allTodos.filter((item, index) => {
         return item.isComplete === true;
     });
 
 
+    const viewTodos = async () => {
+        try {
+            let todos = await databases.listDocuments(
+                process.env.REACT_APP_DB_ID,
+                process.env.REACT_APP_COLLECTION_ID,
+                [Query.equal('email', email)]
+            );
+            setTodos(todos.documents);
+        } catch (error) {
+            console.error('Failed to fetch todos:', error);
+        }
+    };
+
     return (
         <>
-            <h1>My Todos</h1>
+            <div className="topContainer">
+                <h1>{name} Todos</h1>
+                <div className="logoutBtn">
+                    <button onClick={handleLogOut} className="logoutBtn">Logout</button>
+                </div>
+            </div>
             <div className="todo-wrapper">
                 <div className="todo-input">
                     <div className="todo-input-items">
                         <label htmlFor="title">Tite</label>
                         <input type="text" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Whats the task title ?" />
                     </div>
+
                     <div className="todo-input-items">
                         <label htmlFor="description">Description</label>
                         <input type="text" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} placeholder="Enter description" />
@@ -93,8 +162,6 @@ export default function TaskInput() {
                                     </p>
                                 </div>
                                 <div>
-                                    <BsCheckLg className='check-icon' onClick={(e) => {
-                                    }} />
                                     <AiOutlineDelete className='icon' onClick={(e) => {
                                         e.currentTarget.closest('.todo-list-item').remove();
                                     }} />

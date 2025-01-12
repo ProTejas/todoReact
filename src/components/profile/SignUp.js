@@ -1,89 +1,84 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { account } from "../apiFolder/api";
 const FormRegistration = () => {
+    const navigate = useNavigate();
     const [darkMode, setDarkMode] = useState(true);
     const [errors, setErrors] = useState("");
-    // const [firstName, setName] = useState('');
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phoneNumber: '',
-        password: '',
-    });
-    // const [lastname, setLastName] = useState('');
 
-    const validateField = (name, value) => {
-        let error = '';
-
-        // Validation for the Name field
-        if (name === 'firstName') {
-            if (!value) {
-                error = 'Name is required';
-            } else if (!/^\S+$/.test(value)) {
-                error = 'Name can only contain letters and spaces';
-            }
-        }
-        if (name === 'lastName') {
-            if (!value) {
-                error = 'Name is required';
-            } else if (!/^\S+$/.test(value)) {
-                error = 'Name can only contain letters and spaces';
-            }
-        }
-
-        // Validation for the Email field
-        if (name === 'email') {
-            if (!value) {
-                error = 'Email is required';
-            } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value)) {
-                error = 'Email is invalid';
-            }
-        }
-
-        // Validation for the Phone Number field
-        if (name === 'phoneNumber') {
-            if (!value) {
-                error = 'Phone number is required';
-            } else if (!/^\d{10}$/.test(value)) {
-                error = 'Phone number must be 10 digits';
-            }
-        }
-
-        if (name === 'password') {
-            if (!value) {
-                error = 'Password is required';
-            }
-        }
-
-        setErrors((prevErrors) => ({
-            ...prevErrors,
-            [name]: error,
-        }));
-    };
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: value,
-        });
+    const [firstName, setFirstName] = React.useState('');
+    const [lastName, setLastName] = React.useState('');
+    const [email, setEmail] = React.useState('');
+    const [password, setPassword] = React.useState('');
+    const [mobile, setMobile] = React.useState('');
 
 
-        // Validate the field as the user types
-        validateField(name, value);
-    };
+    /*    const validateField = (name, value) => {
+           let error = '';
+   
+           // Validation for the Name field
+           if (name === 'firstName') {
+               if (!value) {
+                   error = 'Name is required';
+               } else if (!/^\S+$/.test(value)) {
+                   error = 'Name can only contain letters and spaces';
+               }
+           }
+           if (name === 'lastName') {
+               if (!value) {
+                   error = 'Name is required';
+               } else if (!/^\S+$/.test(value)) {
+                   error = 'Name can only contain letters and spaces';
+               }
+           }
+   
+           // Validation for the Email field
+           if (name === 'email') {
+               if (!value) {
+                   error = 'Email is required';
+               } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value)) {
+                   error = 'Email is invalid';
+               }
+           }
+   
+           // Validation for the Phone Number field
+           if (name === 'phoneNumber') {
+               if (!value) {
+                   error = 'Phone number is required';
+               } else if (!/^\d{10}$/.test(value)) {
+                   error = 'Phone number must be 10 digits';
+               }
+           }
+   
+           if (name === 'password') {
+               if (!value) {
+                   error = 'Password is required';
+               }
+           }
+   
+           setErrors((prevErrors) => ({
+               ...prevErrors,
+               [name]: error,
+           }));
+       }; */
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Check if there are any validation errors before submitting
-        if (!Object.values(errors).some((error) => error)) {
-            alert('Form submitted successfully');
-            // Perform your form submission logic here
+        if (firstName === '' || lastName === '' || email === '' || password === '' || mobile === '') {
+            alert('All fields are required');
         } else {
-            alert('Please fix the errors in the form');
+            register();
         }
-    };
+    }
+
+    const register = async (e) => {
+        await account.create('unique()', email, password, firstName + " " + lastName, mobile).then(response => {
+            console.log(response);
+            navigate('/log-in');
+        }).catch((error) => {
+            console.log(error);
+        });
+    }
 
     return (
         <div className="flex flex-col justify-center items-center w-full h-[100vh] bg-[#282D2D] px-5">
@@ -126,8 +121,7 @@ const FormRegistration = () => {
                                         : "bg-gray-100 text-black focus:border-black"
                                         }`}
                                     name='firstName'
-                                    value={formData.firstName}
-                                    onChange={handleChange}
+                                    onChange={(e) => setFirstName(e.target.value)}
                                     type="text"
                                     placeholder="Your first name"
                                 />
@@ -141,7 +135,7 @@ const FormRegistration = () => {
                                         }`}
                                     type="text"
                                     name='lastName'
-                                    onChange={handleChange}
+                                    onChange={(e) => setLastName(e.target.value)}
                                     placeholder="Your last name"
                                 />
                                 {errors.lastName && <span style={{ color: 'red' }} className="text-sm">{errors.lastName}</span>}
@@ -155,7 +149,7 @@ const FormRegistration = () => {
                                     }`}
                                 name='email'
                                 type="email"
-                                onChange={handleChange}
+                                onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Enter your email"
                             />
                             {errors.email && <span style={{ color: 'red' }} className="text-sm">{errors.email}</span>}
@@ -167,7 +161,7 @@ const FormRegistration = () => {
                                 }`}
                             name="phoneNumber"
                             type="tel"
-                            onChange={handleChange}
+                            onChange={(e) => setMobile(e.target.value)}
                             placeholder="Enter your phone"
                         />
                         {errors.phoneNumber && <span style={{ color: 'red' }} className="text-sm">{errors.phoneNumber}</span>}
@@ -178,7 +172,7 @@ const FormRegistration = () => {
                                 }`}
                             name="password"
                             type="password"
-                            onChange={handleChange}
+                            onChange={(e) => setPassword(e.target.value)}
                             placeholder="Password"
                         />
                         <button className="mt-5 tracking-wide font-semibold bg-[#22c55e] text-gray-100 w-full py-4 rounded-lg hover:bg-[#4ade80]/90 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none">
